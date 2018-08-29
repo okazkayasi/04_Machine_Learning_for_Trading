@@ -24,6 +24,9 @@ GT ID: 903369796 (replace with your GT ID)
 
 import numpy as np
 import matplotlib.pyplot as plt
+import pandas as pd
+import math
+
 def author():
     return 'mkazkayasi3' # replace tb34 with your Georgia Tech username.
 
@@ -42,6 +45,7 @@ def test_code():
  
     # exp1fig1(win_prob)
     exp1fig2(win_prob)
+    exp1fig3(win_prob)
 
 def exp1fig1(win_prob):
     results = np.zeros((10, 1001), dtype = int)
@@ -76,13 +80,44 @@ def exp1fig2(win_prob):
         result = thousand_exp(win_prob)
         results[i][:] = result    
 
-    means = np.mean(results, axis=0)
+    mean = np.mean(results, axis=0)
     std = np.std(results, axis=0)
-    plt.plot(means)
+    mean_plus_std = mean + std
+    mean_minus_std = mean - std
+    
+    plt.plot(mean)
+    plt.plot(mean_minus_std)
+    plt.plot(mean_plus_std)
+    plt.legend(['mean', 'mean-std', 'mean+std'])
     plt.ylabel('mean_of_episode_winnings')
     plt.xlabel('number_of_episode')
     plt.axis([0, 300, -256, 100])
     plt.show()
+
+def exp1fig3(win_prob):
+    results = np.zeros((1000, 1001), dtype = int)
+
+    for i in range(1000):
+        result = thousand_exp(win_prob)
+        results[i][:] = result    
+
+    median = np.median(results, axis=0)
+    std = np.std(results, axis=0)
+    median_plus_std = median + std
+    median_minus_std = median - std
+    
+    plt.plot(median)
+    plt.plot(median_minus_std)
+    plt.plot(median_plus_std)
+    plt.legend(['median', 'median-std', 'median+std'])
+    plt.ylabel('median_of_episode_winnings')
+    plt.xlabel('number_of_episode')
+    plt.axis([0, 300, -256, 100])
+    plt.show()
+
+
+
+
 
 def thousand_exp(win_prob):
     episode_winning = 0
