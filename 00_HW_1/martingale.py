@@ -43,9 +43,12 @@ def test_code():
     win_prob = 18./38 # set appropriately to the probability of a win
     np.random.seed(gtid()) # do this only once
  
-    # exp1fig1(win_prob)
+    exp1fig1(win_prob)
     exp1fig2(win_prob)
     exp1fig3(win_prob)
+
+    exp2fig1(win_prob)
+    exp2fig2(win_prob)
 
 def exp1fig1(win_prob):
     results = np.zeros((10, 1001), dtype = int)
@@ -70,8 +73,11 @@ def exp1fig1(win_prob):
             plt.ylabel('episode_winning')
             plt.xlabel('number_of_episode')
             plt.axis([0, 300, -256, 100])
-    
-    plt.show()
+    plt.savefig("experiment1_figure1.png", dpi = 100)
+    plt.cla()
+    plt.clf()
+    # plt.close()
+
 
 def exp1fig2(win_prob):
     results = np.zeros((1000, 1001), dtype = int)
@@ -92,7 +98,9 @@ def exp1fig2(win_prob):
     plt.ylabel('mean_of_episode_winnings')
     plt.xlabel('number_of_episode')
     plt.axis([0, 300, -256, 100])
-    plt.show()
+    plt.savefig("experiment1_figure2.png", dpi = 100)
+    plt.cla()
+    plt.clf()
 
 def exp1fig3(win_prob):
     results = np.zeros((1000, 1001), dtype = int)
@@ -113,33 +121,104 @@ def exp1fig3(win_prob):
     plt.ylabel('median_of_episode_winnings')
     plt.xlabel('number_of_episode')
     plt.axis([0, 300, -256, 100])
-    plt.show()
+    plt.savefig("experiment1_figure3.png", dpi = 100)
+    plt.cla()
+    plt.clf()
+
+
+
+def exp2fig1(win_prob):
+    results = np.zeros((1000, 1001), dtype = int)
+
+    for i in range(1000):
+        result = thousand_exp(win_prob, money=256)
+        results[i][:] = result    
+
+    mean = np.mean(results, axis=0)
+    std = np.std(results, axis=0)
+    mean_plus_std = mean + std
+    mean_minus_std = mean - std
+    
+    plt.plot(mean)
+    plt.plot(mean_minus_std)
+    plt.plot(mean_plus_std)
+    plt.legend(['mean', 'mean-std', 'mean+std'])
+    plt.ylabel('mean_of_episode_winnings')
+    plt.xlabel('number_of_episode')
+    plt.axis([0, 1000, -256, 100])
+    plt.savefig("experiment2_figure1.png", dpi = 100)
+    plt.cla()
+    plt.clf()
+
+
+
+def exp2fig2(win_prob):
+    results = np.zeros((1000, 1001), dtype = int)
+
+    for i in range(1000):
+        result = thousand_exp(win_prob, money=256)
+        results[i][:] = result    
+
+    median = np.median(results, axis=0)
+    std = np.std(results, axis=0)
+    median_plus_std = median + std
+    median_minus_std = median - std
+    
+    plt.plot(median)
+    plt.plot(median_minus_std)
+    plt.plot(median_plus_std)
+    plt.legend(['median', 'median-std', 'median+std'])
+    plt.ylabel('median_of_episode_winnings')
+    plt.xlabel('number_of_episode')
+    plt.axis([0, 1000, -256, 100])
+    plt.savefig("experiment2_figure2.png", dpi = 100)
+    plt.cla()
+    plt.clf()
 
 
 
 
 
-def thousand_exp(win_prob):
+def thousand_exp(win_prob, money=np.inf):
+
     episode_winning = 0
     winnings = np.zeros(1001, dtype=int)
     i = 0
     while i < 1000:
         bet_amount = 1
         won = False
+        
         while not won:
-                
             i += 1
-            if episode_winning >= 80:
+
+
+            if money <= 0:
                 winnings[i] = episode_winning
                 won = True
+
             else:
-                won = get_spin_result(win_prob) # test the roulette spin
-                if won:
-                    episode_winning += bet_amount
+
+                if money >= bet_amount:
+                    bet_amount = bet_amount
+                elif money < bet_amount and money > 0:
+                    bet_amount = money
+
+                if episode_winning >= 80:
+                    winnings[i] = episode_winning
+                    won = True
                 else:
-                    episode_winning -= bet_amount
-                    bet_amount *= 2
-            winnings[i] = episode_winning
+                    won = get_spin_result(win_prob) # test the roulette spin
+                    if won:
+                        episode_winning += bet_amount
+                        money += bet_amount
+                    else:
+                        episode_winning -= bet_amount
+                        money -= bet_amount
+                        bet_amount *= 2
+                winnings[i] = episode_winning
+                if i == 1000:
+                    won = True
+
 
     return winnings
     # add your code here to implement the experiment  

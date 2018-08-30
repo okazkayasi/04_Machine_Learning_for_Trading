@@ -6,5 +6,7 @@ def test_run():
     df[['Close', 'Adj Close']].plot()
     plt.show()
 
+    # legends came themselves
+
 if __name__ == "__main__":
     test_run()

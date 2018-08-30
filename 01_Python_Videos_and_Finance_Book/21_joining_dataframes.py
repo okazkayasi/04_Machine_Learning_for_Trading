@@ -28,7 +28,7 @@ def test_run():
         df_temp = df_temp.rename(columns={'Adj Close': symbol})
 
         df1 = df1.join(df_temp) #use default how='left
-
+   
 
     print df1
 
