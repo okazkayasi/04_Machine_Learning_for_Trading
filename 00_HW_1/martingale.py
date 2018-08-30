@@ -44,11 +44,11 @@ def test_code():
     np.random.seed(gtid()) # do this only once
  
     exp1fig1(win_prob)
-    exp1fig2(win_prob)
-    exp1fig3(win_prob)
+    res1 = exp1fig2(win_prob)
+    exp1fig3(win_prob, res1)
 
-    exp2fig1(win_prob)
-    exp2fig2(win_prob)
+    res2 = exp2fig1(win_prob)
+    exp2fig2(win_prob, res2)
 
 def exp1fig1(win_prob):
     results = np.zeros((10, 1001), dtype = int)
@@ -64,7 +64,8 @@ def exp1fig1(win_prob):
     #         ax[i][j].plot(results(num))
     # plt.show()
     plt.figure(1)
-    
+    plt.figure(figsize=(8, 10))
+
     for i in range(2):
         for j in range(5):
             num = i*5 + j + 1
@@ -76,6 +77,7 @@ def exp1fig1(win_prob):
     plt.savefig("experiment1_figure1.png", dpi = 100)
     plt.cla()
     plt.clf()
+    plt.figure(figsize=(10., 5.))
     # plt.close()
 
 
@@ -101,13 +103,15 @@ def exp1fig2(win_prob):
     plt.savefig("experiment1_figure2.png", dpi = 100)
     plt.cla()
     plt.clf()
+    return results
 
-def exp1fig3(win_prob):
-    results = np.zeros((1000, 1001), dtype = int)
+def exp1fig3(win_prob, res1):
+    results = res1
+    # results = np.zeros((1000, 1001), dtype = int)
 
-    for i in range(1000):
-        result = thousand_exp(win_prob)
-        results[i][:] = result    
+    # for i in range(1000):
+    #     resures1
+    #     results[i][:] = result    
 
     median = np.median(results, axis=0)
     std = np.std(results, axis=0)
@@ -146,18 +150,21 @@ def exp2fig1(win_prob):
     plt.ylabel('mean_of_episode_winnings')
     plt.xlabel('number_of_episode')
     plt.axis([0, 1000, -256, 100])
+
     plt.savefig("experiment2_figure1.png", dpi = 100)
     plt.cla()
     plt.clf()
+    return results
 
 
+def exp2fig2(win_prob, res2):
+    
+    results = res2
+    # results = np.zeros((1000, 1001), dtype = int)
 
-def exp2fig2(win_prob):
-    results = np.zeros((1000, 1001), dtype = int)
-
-    for i in range(1000):
-        result = thousand_exp(win_prob, money=256)
-        results[i][:] = result    
+    # for i in range(1000):
+    #     result = thousand_exp(win_prob, money=256)
+    #     results[i][:] = result    
 
     median = np.median(results, axis=0)
     std = np.std(results, axis=0)
