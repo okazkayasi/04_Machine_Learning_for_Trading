@@ -28,6 +28,11 @@ def get_data(symbols, dates):
 
     return df
 
+def normalize_data(df):
+    # normalize stock prices using the first row of dataframe
+
+    return df/df.ix[0,:]
+
 def plot_data(df, title="Stock prices"):
     # plot stock prices
 
@@ -61,6 +66,7 @@ def test_run():
 
     # print df.ix['2010-03-10':'2010-03-15', ['SPY', 'IBM']]
 
+    df = normalize_data(df)
     plot_selected(df, ['SPY', 'IBM'], '2010-03-01', '2010-04-01')
     plot_data(df)
 
