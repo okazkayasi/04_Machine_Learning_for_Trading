@@ -22,7 +22,11 @@ def test_run():
 
     print np.random.normal(50,10, size=(2,3)) #std normal 
 
-
+    # random integers
+    print np.random.randint(10) # a single integet in [0, 10)
+    print np.random.randint(1,10) # [1, 10]
+    print np.random.randint(0, 10, size=5) # 5 random integers as a 1D array
+    print np.random.randint(0,10,size=(2,3)) # 2x3 array of rand integers
 
 if __name__ == "__main__":
     test_run()
