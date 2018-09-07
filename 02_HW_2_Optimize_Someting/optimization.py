@@ -29,10 +29,12 @@ import pandas as pd
 import matplotlib.pyplot as plt  	 		 		   		 		  
 import numpy as np		   		 		  
 import datetime as dt 		  
-from util import get_data, plot_data	  		    	 		 		   		 		  
+import scipy.optimize as spo
+from util import get_data, plot_data
+from math import sqrt	  		    	 		 		   		 		  
 
 
-def sharpe_ratio(symbols, allocation):
+def sharpe_ratio(allocs, prices, ret=False):
     # compute the sharpe ratio of given portfolio
 
     # PARAMETERS
@@ -44,9 +46,21 @@ def sharpe_ratio(symbols, allocation):
 
 
     # get mean daily return of each symbol
+    normalized_prices = prices/prices.ix[0,:]
 
-    err = np.sum((data[:,1] - (line[0]*data[:,0] + line[1]))**2)
-    return err
+    alloced = normalized_prices * allocs
+    port_val = alloced.sum(axis=1)
+    port_daily_return = (port_val/port_val.shift(1))-1
+    port_daily_return = port_daily_return.ix[1:].values
+    port_mean = port_daily_return.mean()
+    port_std = port_daily_return.std()
+    sharpe_ratio = sqrt(252) * (port_mean / port_std)
+    sharpe_ratio *= -1
+    cr = port_val[-1]/port_val[0]
+    if ret:
+        return  cr, port_mean, port_std, sharpe_ratio*-1
+    return sharpe_ratio
+
 
 def fit_line(data, error_func):
     # fit a line to given data, using a supplied error func
@@ -69,48 +83,43 @@ def fit_line(data, error_func):
     plt.show()
     return result.x
 
-
-    # this returns the daily_returns
-def compute_daily_returns(df):
-    # return DataFrame that have the same number of rows
-    daily_return = df.copy()
-    daily_return[1:] = (df[1:] / df[:-1].values)
-    daily_return.ix[0,:] = 0
-
-#    return daily_return
-
-    # pandas way
-    daily_return = (df/ df.shift(1))-1
-    return daily_return
-
 # This is the function that will be tested by the autograder
 # The student must update this code to properly implement the functionality
-def optimize_portfolio(sd=dt.datetime(2008,1,1), ed=dt.datetime(2009,1,1), \
-    syms=['GOOG','AAPL','GLD','XOM'], gen_plot=False):		  
+def optimize_portfolio(sd=dt.datetime(2008,1,1), ed=dt.datetime(2009,1,1), syms=['GOOG','AAPL','GLD','XOM'], gen_plot=False):		  
+
 
     # Read in adjusted closing prices for given symbols, date range 
     dates = pd.date_range(sd, ed)
     prices_all = get_data(syms, dates)  # automatically adds SPY
+    # fill NA
+    prices_all.fillna(method='ffill', inplace=True)
+    prices_all.fillna(method='bfill', inplace=True)
+    
     prices = prices_all[syms]  # only portfolio symbols
     prices_SPY = prices_all['SPY']  # only SPY, for comparison later
+    # plot_data(prices_all)
     # find the allocations for the optimal portfolio
     # note that the values here ARE NOT meant to be correct for a test case
-    allocs = np.asarray([0.2, 0.2, 0.3, 0.3]) # add code here to find the allocations
+    
 
-    # let's calculate average daily returns
+    # set each equal
+    allocs = [(1./len(syms))] * len(syms) 
 
-    cr, adr, sddr, sr = [0.25, 0.001, 0.0005, 2.1] # add code here to compute stats
+    # set boubds
+    bounded = [(0., 1.)] * len(syms)
+    allocs = spo.minimize(sharpe_ratio, x0=allocs, args = (prices), method='SLSQP', options = {'disp':True}, bounds = bounded, constraints = ({'type': 'eq', 'fun': lambda allocs: 1.0 - sum(allocs) })) 
+    
 
-    # Get daily portfolio value
-    port_val = prices_SPY # add code here to compute daily portfolio values
 
-    # Compare daily portfolio value with SPY using a normalized plot
-    if gen_plot:
-        # add code to plot here
-        df_temp = pd.concat([port_val, prices_SPY], keys=['Portfolio', 'SPY'], axis=1)
-        pass
+    cr, adr, sddr, sr = sharpe_ratio(allocs.x, prices, ret=True)
 
-    return allocs, cr, adr, sddr, sr
+    # # Compare daily portfolio value with SPY using a normalized plot
+    # if gen_plot:
+    #     # add code to plot here
+    #     df_temp = pd.concat([port_val, prices_SPY], keys=['Portfolio', 'SPY'], axis=1)
+    #     pass
+
+    return allocs.x, cr, adr, sddr, sr
   
 def test_code():  		 		  
     # This function WILL NOT be called by the auto grader
@@ -135,6 +144,9 @@ def test_code():
     print "Volatility (stdev of daily returns):", sddr
     print "Average Daily Return:", adr
     print "Cumulative Return:", cr
+
+  
+
 if __name__ == "__main__":
     # This code WILL NOT be called by the auto grader
     # Do not assume that it will be called
