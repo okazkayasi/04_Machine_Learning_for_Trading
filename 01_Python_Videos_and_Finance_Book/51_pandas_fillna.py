@@ -55,6 +55,7 @@ def test_run():
     df_data = get_data(symbollist, idx)
     df_data.fillna(method='ffill', inplace=True)
     df_data.fillna(method='bfill', inplace=True)
+    #==========================================
     plot_data(df_data)
 
 if __name__ == "__main__":

@@ -48,7 +48,5 @@ def test_run():
     # calculate correlation coeff
     print daily_returns.corr(method='pearson')
 
-
-
 if __name__ == "__main__":
     test_run()
