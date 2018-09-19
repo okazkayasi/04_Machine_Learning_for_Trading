@@ -97,7 +97,6 @@ def optimize_portfolio(sd=dt.datetime(2008,1,1), ed=dt.datetime(2009,1,1), syms=
     
     prices = prices_all[syms]  # only portfolio symbols
     prices_SPY = prices_all['SPY']  # only SPY, for comparison later
-    prices_SPY = prices_SPY / prices_SPY[0]
     # plot_data(prices_all)
     # find the allocations for the optimal portfolio
     # note that the values here ARE NOT meant to be correct for a test case
