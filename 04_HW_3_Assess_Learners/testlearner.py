@@ -64,7 +64,7 @@ def rmse(trainX, trainY, testX, testY, learner):
 
 if __name__=="__main__":
     if len(sys.argv) == 2:
-        print "Usage: python testlearner.py #<filename>"
+        # print "Usage: python testlearner.py #<filename>"
         # sys.exit(1)
         filename = sys.argv[1]
     else:
@@ -76,8 +76,8 @@ if __name__=="__main__":
     data = np.genfromtxt(inf, delimiter=',')
     if filename == 'Istanbul.csv':
         data = data[1:,1:]
-        print "ISTANBUL - ISTANBULLLL!!!!"
-    print filename
+        # print "ISTANBUL - ISTANBULLLL!!!!"
+    # print filename
 
     # data = np.array([map(float,s.strip().split(',')) for s in inf.readlines()])
 
@@ -216,11 +216,11 @@ if __name__=="__main__":
             hold_it[1, leaf-1] = out_sample
 
         q = np.argmin(hold_it[1, :])
-        print 'random out sample minimum value: ', np.argmin(hold_it[1, :]), np.min(hold_it[1,:])
-        print 'in sample value at min value of out sample: ', hold_it[0, q]
+        # print 'random out sample minimum value: ', np.argmin(hold_it[1, :]), np.min(hold_it[1,:])
+        # print 'in sample value at min value of out sample: ', hold_it[0, q]
         a[0, i] = q
         a[1, i] = np.min(hold_it[1,:])  
-    print a
+    # print a
 
 
 
@@ -237,7 +237,8 @@ if __name__=="__main__":
         # print 'random out sample minimum value: ', np.argmin(hold_it[1, :]), np.ma(hold_it[1,:])
         # print 'in sample value at min value of out sample: ', hold_it[0, q]
         a[0, i] = q
-        a[1, i] = np.mean(nold_it[1,:])     print a
+        a[1, i] = np.mean(nold_it[1,:])     
+    # print a
 
 
 
