@@ -99,8 +99,6 @@ class RTLearner:
             right_node = node + left_tree.shape[0] + 1
         else:
             right_node = node + 1 + 1
-        if right_node == 7:
-            print 'aaaa'
         right_tree = self.build_tree(right_x, right_y, right_node)
 
         # add root
