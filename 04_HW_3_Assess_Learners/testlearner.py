@@ -101,106 +101,146 @@ if __name__=="__main__":
 
 
 
+    ## FOR DT Learner Leaf size 1 to all
+    for leaf in range(1,trainX.shape[0]):
+        learner = dl.DTLearner(leaf_size=leaf, verbose=False)
+        in_sample, out_sample = rmse(trainX, trainY, testX, testY, learner)
+        hold_it[0, leaf-1] = in_sample
+        hold_it[1, leaf-1] = out_sample
+
+    q = np.argmin(hold_it[1, :])
+    print 'out sample minimum value: ', np.argmin(hold_it[1, :]), np.min(hold_it[1,:])
+    print 'in sample value at min value of out sample: ', hold_it[0, q]
+
+    plt.rcParams["figure.figsize"] = (10,8)    
+    fig, ax = plt.subplots()
+    ax.plot(range(1, trainX.shape[0]), hold_it[0], label='in-sample')
+    ax.plot(range(1, trainX.shape[0]), hold_it[1], label='out-sample')
+    plt.ylabel('RMSE')
+    plt.xlabel('Leaf Size')
+    plt.title('Overfitting Comparison Depending on Leaf Size (TD Learning)')
+    maks = np.max(hold_it) * 1.1 
+    plt.axis([1, trainX.shape[0], 0, maks])
+    plt.legend()  
+    # plt.show()
+    plt.savefig('Overfitting_Comparison_Depending_on_Leaf_Size_Size_All.png')
+
+    # plt.close()
+
+
+    fig, ax = plt.subplots()
+    ax.plot(range(1, 20), hold_it[0, :19], label='in-sample')
+    ax.plot(range(1, 20), hold_it[1, :19], label='out-sample')
+    plt.ylabel('RMSE')
+    plt.xlabel('Leaf Size')
+    plt.title('Overfitting Comparison Depending on Leaf Size (TD Learning)')
+    maks = np.max(hold_it[:, :19]) * 1.1 
+    plt.axis([1, 20, 0, maks])
+    plt.legend()  
+    # plt.rcParams["figure.figsize"] = (10,8)
+    plt.savefig('Overfitting_Comparison_Depending_on_Leaf_Size_Size_20.png')
+
+
+
+    bags = 90
+    diff = 3
+    hold_it = np.zeros((2, bags/diff))
+
+    for no_bag in range(1,bags, diff):
+        # learner = dl.DTLearner(leaf_size=leaf, verbose=False)
+
+        bag = bl.BagLearner(dl.DTLearner, kwargs = {"leaf_size": 9, "verbose": False}, bags = no_bag, boost=False, verbose=False)
+        in_sample, out_sample = rmse(trainX, trainY, testX, testY, bag)
+        hold_it[0, ((no_bag/diff))] = in_sample
+        hold_it[1, ((no_bag/diff))] = out_sample
+
+    print 'leaf_size 9'
+    print hold_it[1, 0]
+    print np.mean(hold_it[1, 20:])
+
+    fig, ax = plt.subplots()
+    ax.plot(range(1,bags,diff), hold_it[0], label='in-sample')
+    ax.plot(range(1,bags,diff), hold_it[1], label='out-sample')
+    plt.ylabel('RMSE')
+    plt.xlabel('Number of Bags')
+    plt.title('Overfitting Comparison Depending on Number of Bags (Leaf_size=9)')
+    maks = np.max(hold_it) * 1.1 
+    plt.axis([1, bags, 0, maks])
+    plt.legend()   
+    # plt.show()
+    plt.savefig('Overfitting_Comparison_Depending_on_Number_of_Bags_Leaf_Size_9.png')
+
+
+
+    # LEAF SIZE 2 bags 30
+    bags = 90
+    diff = 3
+    hold_it = np.zeros((2, bags/diff))
+
+    for no_bag in range(1,bags, diff):
+        # learner = dl.DTLearner(leaf_size=leaf, verbose=False)
+
+        bag = bl.BagLearner(dl.DTLearner, kwargs = {"leaf_size": 2, "verbose": False}, bags = no_bag, boost=False, verbose=False)
+        in_sample, out_sample = rmse(trainX, trainY, testX, testY, bag)
+        hold_it[0, ((no_bag/diff))] = in_sample
+        hold_it[1, ((no_bag/diff))] = out_sample
+
+    print 'leaf_size 2'
+    print hold_it[1, 0]
+    print np.mean(hold_it[1, 20:])
+
+
+    fig, ax = plt.subplots()
+    ax.plot(range(1,bags,diff), hold_it[0], label='in-sample')
+    ax.plot(range(1,bags,diff), hold_it[1], label='out-sample')
+    plt.ylabel('RMSE')
+    plt.xlabel('Number of Bags')
+    plt.title('Overfitting Comparison Depending on Number of Bags (Leaf_size=2)')
+    maks = np.max(hold_it) * 1.1 
+    plt.axis([1, bags, 0, maks])
+    plt.legend()  
+    # plt.show()
+    plt.savefig('Overfitting_Comparison_Depending_on_Number_of_Bags_Leaf_Size_2.png')
+
+
+
+
+
+    hold_it = np.zeros((2, 50))
+
+
     # ## FOR DT Learner Leaf size 1 to all
-    # for leaf in range(1,trainX.shape[0]):
-    #     learner = dl.DTLearner(leaf_size=leaf, verbose=False)
-    #     in_sample, out_sample = rmse(trainX, trainY, testX, testY, learner)
-    #     hold_it[0, leaf-1] = in_sample
-    #     hold_it[1, leaf-1] = out_sample
+    for leaf in range(1,51):
+        bag = bl.BagLearner(dl.DTLearner, kwargs = {"leaf_size": leaf, "verbose": False}, bags = 20, boost=False, verbose=False)
+        in_sample, out_sample = rmse(trainX, trainY, testX, testY, bag)
+        hold_it[0, leaf-1] = in_sample
+        hold_it[1, leaf-1] = out_sample
 
-    # q = np.argmin(hold_it[1, :])
-    # print 'out sample minimum value: ', np.argmin(hold_it[1, :]), np.min(hold_it[1,:])
-    # print 'in sample value at min value of out sample: ', hold_it[0, q]
-
-    # plt.rcParams["figure.figsize"] = (10,8)    
-    # fig, ax = plt.subplots()
-    # ax.plot(range(1, trainX.shape[0]), hold_it[0], label='in-sample')
-    # ax.plot(range(1, trainX.shape[0]), hold_it[1], label='out-sample')
-    # plt.ylabel('RMSE')
-    # plt.xlabel('Leaf Size')
-    # plt.title('Overfitting Comparison Depending on Leaf Size (TD Learning)')
-    # maks = np.max(hold_it) * 1.1 
-    # plt.axis([1, trainX.shape[0], 0, maks])
-    # plt.legend()  
-    # # plt.show()
-    # plt.savefig('Overfitting_Comparison_Depending_on_Leaf_Size_Size_All.png')
-
-    # # plt.close()
+    print 'leaf_size 9'
+    print hold_it[1, 0]
+    print np.mean(hold_it[1, 20:])
 
 
-    # fig, ax = plt.subplots()
-    # ax.plot(range(1, 20), hold_it[0, :19], label='in-sample')
-    # ax.plot(range(1, 20), hold_it[1, :19], label='out-sample')
-    # plt.ylabel('RMSE')
-    # plt.xlabel('Leaf Size')
-    # plt.title('Overfitting Comparison Depending on Leaf Size (TD Learning)')
-    # maks = np.max(hold_it[:, :19]) * 1.1 
-    # plt.axis([1, 20, 0, maks])
-    # plt.legend()  
-    # # plt.rcParams["figure.figsize"] = (10,8)
-    # plt.savefig('Overfitting_Comparison_Depending_on_Leaf_Size_Size_20.png')
+    plt.rcParams["figure.figsize"] = (10,8)    
+
+    fig, ax = plt.subplots()
+
+    ax.plot(range(1, 51), hold_it[0, :], label='in-sample')
+    ax.plot(range(1, 51), hold_it[1, :], label='out-sample')
+    plt.ylabel('RMSE')
+    plt.xlabel('Leaf Size')
+    plt.title('Overfitting Comparison Depending on Leaf Size (TD Learning with Bagging Size 20)')
+    maks = np.max(hold_it) * 1.1 
+    plt.axis([1, 50, 0, maks])
+    plt.legend()  
+    # plt.rcParams["figure.figsize"] = (10,8)
+    plt.savefig('Bagging_Overfitting_Comparison_Depending_on_Leaf_Size_Size_20.png')
 
 
 
-    # bags = 90
-    # diff = 3
-    # hold_it = np.zeros((2, bags/diff))
-
-    # for no_bag in range(1,bags, diff):
-    #     # learner = dl.DTLearner(leaf_size=leaf, verbose=False)
-
-    #     bag = bl.BagLearner(dl.DTLearner, kwargs = {"leaf_size": 9, "verbose": False}, bags = no_bag, boost=False, verbose=False)
-    #     in_sample, out_sample = rmse(trainX, trainY, testX, testY, bag)
-    #     hold_it[0, ((no_bag/diff))] = in_sample
-    #     hold_it[1, ((no_bag/diff))] = out_sample
-
-    # print 'leaf_size 9'
-    # print hold_it[1, 0]
-    # print np.mean(hold_it[1, 20:])
-
-    # fig, ax = plt.subplots()
-    # ax.plot(range(1,bags,diff), hold_it[0], label='in-sample')
-    # ax.plot(range(1,bags,diff), hold_it[1], label='out-sample')
-    # plt.ylabel('RMSE')
-    # plt.xlabel('Number of Bags')
-    # plt.title('Overfitting Comparison Depending on Number of Bags (Leaf_size=9)')
-    # maks = np.max(hold_it) * 1.1 
-    # plt.axis([1, bags, 0, maks])
-    # plt.legend()   
-    # # plt.show()
-    # plt.savefig('Overfitting_Comparison_Depending_on_Number_of_Bags_Leaf_Size_9.png')
 
 
 
-    # # LEAF SIZE 2 bags 30
-    # bags = 90
-    # diff = 3
-    # hold_it = np.zeros((2, bags/diff))
-
-    # for no_bag in range(1,bags, diff):
-    #     # learner = dl.DTLearner(leaf_size=leaf, verbose=False)
-
-    #     bag = bl.BagLearner(dl.DTLearner, kwargs = {"leaf_size": 2, "verbose": False}, bags = no_bag, boost=False, verbose=False)
-    #     in_sample, out_sample = rmse(trainX, trainY, testX, testY, bag)
-    #     hold_it[0, ((no_bag/diff))] = in_sample
-    #     hold_it[1, ((no_bag/diff))] = out_sample
-
-    # print 'leaf_size 2'
-    # print hold_it[1, 0]
-    # print np.mean(hold_it[1, 20:])
-
-
-    # fig, ax = plt.subplots()
-    # ax.plot(range(1,bags,diff), hold_it[0], label='in-sample')
-    # ax.plot(range(1,bags,diff), hold_it[1], label='out-sample')
-    # plt.ylabel('RMSE')
-    # plt.xlabel('Number of Bags')
-    # plt.title('Overfitting Comparison Depending on Number of Bags (Leaf_size=2)')
-    # maks = np.max(hold_it) * 1.1 
-    # plt.axis([1, bags, 0, maks])
-    # plt.legend()  
-    # # plt.show()
-    # plt.savefig('Overfitting_Comparison_Depending_on_Number_of_Bags_Leaf_Size_2.png')
 
 
 
