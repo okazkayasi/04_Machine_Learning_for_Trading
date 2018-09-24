@@ -12,10 +12,9 @@
 # value correlation with Y
 
 """
-import DTLearner as dt
-learner = dt.DTLearner(leaf_size = 1, verbose = False) # constructor
-learner.addEvidence(Xtrain, Ytrain) # training step
-Y = learner.query(Xtest) # query
+Student Name: Mehmet Oguz Kazkayasi (replace with your name)
+GT User ID: mkazkayasi3 (replace with your User ID)
+GT ID: 903369796 (replace with your GT ID)
 """
 import numpy as np
 

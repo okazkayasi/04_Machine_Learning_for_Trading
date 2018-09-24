@@ -5,6 +5,11 @@ learner = bl.BagLearner(learner = al.ArbitraryLearner, kwargs = {"argument1":1, 
 learner.addEvidence(Xtrain, Ytrain)
 Y = learner.query(Xtest)
 """
+"""
+Student Name: Mehmet Oguz Kazkayasi (replace with your name)
+GT User ID: mkazkayasi3 (replace with your User ID)
+GT ID: 903369796 (replace with your GT ID)
+"""
 import numpy as np
 from RTLearner import RTLearner
 

@@ -18,6 +18,12 @@ GT honor code violation.
 
 -----do not edit anything above this line---
 """
+
+"""
+Student Name: Mehmet Oguz Kazkayasi (replace with your name)
+GT User ID: mkazkayasi3 (replace with your User ID)
+GT ID: 903369796 (replace with your GT ID)
+"""
 import numpy as np
 import math
 import matplotlib.pyplot as plt
@@ -375,3 +381,7 @@ if __name__=="__main__":
     plt.legend()  
     # plt.show()
     plt.savefig('Random Overfitting_Comparison_Depending_on_Number_of_Bags_Leaf_Size_2.png')
+
+
+def author(self):
+    return 'mkazkayasi3'
