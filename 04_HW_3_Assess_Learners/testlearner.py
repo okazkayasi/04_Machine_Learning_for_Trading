@@ -237,8 +237,7 @@ if __name__=="__main__":
         # print 'random out sample minimum value: ', np.argmin(hold_it[1, :]), np.ma(hold_it[1,:])
         # print 'in sample value at min value of out sample: ', hold_it[0, q]
         a[0, i] = q
-        a[1, i] = np.mean(nold_it[1,:])  
-    print a
+        a[1, i] = np.mean(nold_it[1,:])     print a
 
 
 
@@ -288,7 +287,7 @@ if __name__=="__main__":
         hold_it[0, ((no_bag/diff))] = in_sample
         hold_it[1, ((no_bag/diff))] = out_sample
 
-    print 'leaf_size 9'
+    print 'leaf_size 12, best leaf'
     print hold_it[1, 0]
     print np.mean(hold_it[1, 20:])
 
