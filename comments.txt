@@ -1,3 +1,11 @@
 <pre>--- Summary ---
-Tests passed: 0 out of 0
+Tests passed: 2 out of 3
+
+--- Details ---
+Test #0: failed 
+Description: Test Case 1: Best4LinReg (group: best4lr)
+TimeoutException: Exceeded time limit!
+
+Test #1: passed 
+Test #2: passed 
 </pre>

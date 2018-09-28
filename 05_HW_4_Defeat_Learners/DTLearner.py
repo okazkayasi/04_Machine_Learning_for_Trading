@@ -119,6 +119,10 @@ class DTLearner:
         y = np.transpose(Ytrain)
         mat = np.corrcoef(x, y)
         mat = np.abs(mat[-1])
+
+        a = np.isnan(mat[:-1])
+        if a[a == False].shape[0] == 0:  
+            return 0    
         return np.nanargmax(mat[:-1])
 
     def author(self):
