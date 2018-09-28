@@ -32,11 +32,27 @@ import math
 # better for linear regression than decision trees
 def best4LinReg(seed=1489683273):
     np.random.seed(seed)
-    X = np.zeros((100,2))
-    Y = np.random.random(size = (100,))*200-100
+    
+    # choose n columns randomly
+    cols = np.random.randint(2, 11)
+
+    # create X all integer 0 to 10
+    X = np.random.randint(0, 10, size = (100,cols))
     # Here's is an example of creating a Y from randomly generated
     # X with multiple columns
     # Y = X[:,0] + np.sin(X[:,1]) + X[:,2]**2 + X[:,3]**3
+
+    # create weights -10 to 10
+    weights = np.multiply(np.random.rand(X.shape[1]), np.random.randint(1, 10, size=(X.shape[1])))
+    
+    # add random negativity
+    a = np.random.rand(weights.shape[0]) > 0.5
+    b = np.ones(weights.shape[0])
+    b[a==True] = -1
+    weights = weights * b
+
+    Y = np.dot(X, weights)
+    Y = Y + np.random.normal(loc=0.0, scale=np.abs((np.mean(Y)/50)), size=Y.shape[0])
     return X, Y
 
 def best4DT(seed=1489683273):
@@ -46,7 +62,7 @@ def best4DT(seed=1489683273):
     return X, Y
 
 def author():
-    return 'tb34' #Change this to your user ID
+    return 'mkazkayasi3' #Change this to your user ID
 
 if __name__=="__main__":
     print "they call me Tim."
