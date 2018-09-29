@@ -37,7 +37,7 @@ def best4LinReg(seed=1489683273):
     cols = np.random.randint(2, 11)
 
     # create X all integer 0 to 10
-    X = np.random.randint(0, 10, size = (50,cols))
+    X = np.multiply(np.random.rand(50,cols), np.random.randint(1, 10, size=(50,cols)))
     # Here's is an example of creating a Y from randomly generated
     # X with multiple columns
     # Y = X[:,0] + np.sin(X[:,1]) + X[:,2]**2 + X[:,3]**3
@@ -56,13 +56,14 @@ def best4LinReg(seed=1489683273):
     return X, Y
 
 def best4DT(seed=1489683273):
-    np.random.seed(seed)
+    np.random.seed(seed+100)
     
     # choose n columns randomly
-    cols = np.random.randint(2, 11)
+    # cols = np.random.randint(2, 5)
+    cols = 2
 
     # create X all integer 0 to 10
-    X = np.random.randint(0, 10, size = (1000,cols))
+    X = np.multiply(np.random.rand(1000,cols), np.random.randint(1, 10, size=(1000,cols)))
 
 
     # create weights -10 to 10

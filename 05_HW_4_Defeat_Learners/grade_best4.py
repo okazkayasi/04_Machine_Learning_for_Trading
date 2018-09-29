@@ -155,6 +155,7 @@ def test_learners(description, group, max_tests, needed_wins, row_limits, col_li
                     points_earned += 5.0
                 if better_wins_count >= needed_wins:
                     break
+            print worse_better_err
             incorrect = False
             if (dataX.shape[0] < row_limits[0]) or (dataX.shape[0]>row_limits[1]):
                 incorrect = True
@@ -167,6 +168,7 @@ def test_learners(description, group, max_tests, needed_wins, row_limits, col_li
             if better_wins_count < needed_wins:
                 incorrect = True
                 msgs.append("    Better learner did not exceed worse learner. Expected {}, found {}".format(needed_wins,better_wins_count))
+            print 'wins', better_wins_count 
             if not(np.array_equal(same_dataY,dataY)) or not(np.array_equal(same_dataX,dataX)):
                 incorrect = True
                 msgs.append("    Did not produce the same data with the same seed.\n"+\
