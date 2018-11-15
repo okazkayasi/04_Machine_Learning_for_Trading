@@ -1,0 +1,51 @@
+
+out sample benchmark
+
+bench daily return 0.999849234837
+bench daily std 0.00848901219361
+91033.65
+
+out sample manual
+manual daily return 0.991803354331
+manual daily std 0.719090267037
+-131833.75
+
+
+
+
+
+
+in sample
+ 136198.40
+
+manual daily return 0.975122698292
+manual daily std 1.9544928633
+
+
+
+benchmark
+2009-12-31         101771.4
+
+[505 rows x 1 columns]
+bench daily return 1.00017653936
+bench daily std 0.016877838802
+
+
+
+
+
+
+theoratically best
+2009-12-31         668150.0
+
+[505 rows x 1 columns]
+optimal daily return 1.00378618136
+optimal daily std 0.00462071130365
+
+benchmark
+2009-12-31         101230.0
+
+[505 rows x 1 columns]
+bench daily return 1.00016808698
+bench daily std 0.0170043662712
+
