@@ -59,6 +59,8 @@ class QLearner(object):
         self.verbose = verbose
 
         self.Tc = 0.00001 * np.ones(shape=(num_states, num_actions, num_states), dtype='float')
+
+        self.T = np.zeros(shape=(num_states, num_actions, num_states), dtype='float')
         self.R = np.zeros(shape=(num_states, num_actions))
 
     def querysetstate(self, s):
@@ -98,21 +100,30 @@ class QLearner(object):
  
         self.rand_rate *= self.rand_decay
  
+        if self.dyna > 0:
+            self.Tc[old][old_action][new] = self.Tc[old][old_action][new] + 1
 
-        self.Tc[old][old_action][new] = self.Tc[old][old_action][new] + 1
-        
 
+            total = 0
+            for i in range(self.num_states):
+                total += self.Tc[old][old_action][i] 
+            for i in range(self.num_states):
+                self.T[old][old_action][i] = self.Tc[old][old_action][i] / total
 
-        Q = deepcopy(self.qtable)
-        for i in range(self.dyna):
+            # self.T[:, :, -1] = np.sum(self.Tc, axis=2)
+            # self.T[:, :, :-1] = self.Tc /  self.T[:, :, -1]
 
-            rand_s = np.random.randint(0, self.num_states)
-            rand_a = np.random.randint(0, self.num_actions)
+            self.R[old][old_action] = (1 - self.alpha) * self.R[old][old_action] + self.alpha * r
+    
+            for i in range(self.dyna):
 
-            s1 = np.argmax(self.T[rand_s, rand_a, :]
-            r1 = self.R[rand_s, rand_a]
+                rand_s = np.random.randint(0, self.num_states)
+                rand_a = np.random.randint(0, self.num_actions)
 
-            Q = (1-self.alpha) * Q[s,a] + self.alpha * (self.R[s,a] + self.gamma * Q[s1, Q[s1,:].argmax()])
+                s1 = np.argmax(self.T[rand_s, rand_a, :])
+                r1 = self.R[rand_s, rand_a]
+
+                self.qtable[rand_s, rand_a] = (1-self.alpha) * self.qtable[rand_s, rand_a] + self.alpha * (r1 + self.gamma * self.qtable[s1, self.qtable[s1,:].argmax()])
 
 
 
