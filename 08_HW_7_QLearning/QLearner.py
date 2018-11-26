@@ -94,8 +94,7 @@ class QLearner(object):
         old_action = self.a
         # update Q(s,a)
         self.qtable[self.s, self.a] = (1-self.alpha) * self.qtable[self.s,self.a] + self.alpha * (r + self.gamma * self.qtable[s_prime, self.qtable[s_prime, :].argmax()])
-        
-        
+
         action = self.querysetstate(s_prime)
  
         self.rand_rate *= self.rand_decay
