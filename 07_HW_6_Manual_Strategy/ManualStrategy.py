@@ -19,7 +19,7 @@ class ms:
 
     @staticmethod
     def test_policy(symbol, sd, ed, sv):
-    
+
 
         end_date = ed
         start_date = sd
@@ -46,7 +46,7 @@ class ms:
         strategy = pd.DataFrame(index=JP_2008.index)
         strategy['moving_average'] = JP_2008['20-SMA'] - JP_2008['150-SMA']
 
-        
+
         high = pd.rolling_max(adj_close["JPM"], window=14)
         low = pd.rolling_min(adj_close["JPM"], window=14)
         K = (adj_close["JPM"] - low)/ (high - low) * 100
@@ -142,7 +142,7 @@ class ms:
         # print daily_opt.mean()
         # print 'manual daily return', daily_opt.mean()[0]
         # print 'manual daily std', daily_opt.std()[0]
-        
+
         opt_norm = manual/manual.values[0][0]
 
 
@@ -155,7 +155,7 @@ class ms:
         daily_opt = ms.compute_daily_returns(benchmark)
         daily_opt = daily_opt.replace(0, np.NaN)
         # print 'bench daily return', daily_opt.mean()[0]
-        # print 'bench daily std', daily_opt.std()[0] 
+        # print 'bench daily std', daily_opt.std()[0]
 
         bench_norm = benchmark/benchmark.values[0][0]
 
@@ -170,7 +170,7 @@ class ms:
         # plt.show()
         plt.savefig("Manual vs Benchmark in sample.png", dpi=100)
 
-    
+
     @staticmethod
     def trade(orders_df, sv, ed, sd):
         orders_df.sort_index(inplace=True)
@@ -223,9 +223,9 @@ class ms:
             emp[adj_ind] = my_port.port_value(adj_close.iloc[adj_ind], adj_ind+1)
             adj_ind += 1
 
-        ret_df["Portfolio Value"] = emp    
+        ret_df["Portfolio Value"] = emp
         return ret_df
-    
+
     @staticmethod
     def compute_daily_returns(df):
         # return DataFrame that have the same number of rows

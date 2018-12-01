@@ -25,9 +25,9 @@ GT honor code violation.
 
 -----do not edit anything above this line---
 
-Student Name: Tucker Balch (replace with your name)
-GT User ID: tb34 (replace with your User ID)
-GT ID: 900897987 (replace with your GT ID)
+Student Name: Mehmet Oguz Kazkayasi (replace with your name)
+GT User ID: mkazkayasi3 (replace with your User ID)
+GT ID: 903368798 (replace with your GT ID)
 """
 
 import pytest

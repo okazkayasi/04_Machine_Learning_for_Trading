@@ -21,15 +21,17 @@ GT honor code violation.
 
 -----do not edit anything above this line---
 
-Student Name: Tucker Balch (replace with your name)
-GT User ID: tb34 (replace with your User ID)
-GT ID: 900897987 (replace with your GT ID)
+Student Name: Mehmet Oguz Kazkayasi (replace with your name)
+GT User ID: mkazkayasi3 (replace with your User ID)
+GT ID: 903369796 (replace with your GT ID)
 """
 
 import datetime as dt
 import pandas as pd
 import util as ut
+import numpy as np
 import random
+import QLearner
 
 class StrategyLearner(object):
 
@@ -37,6 +39,97 @@ class StrategyLearner(object):
     def __init__(self, verbose = False, impact=0.0):
         self.verbose = verbose
         self.impact = impact
+        self.q_learner = QLearner.QLearner(num_states=1000, num_actions=3, alpha=0.2, gamma=0.95, rar=0.5, radr=0.99, dyna=0, verbose=False)
+
+
+    @staticmethod
+    def getIndicators(symbol = "IBM", \
+        sd=dt.datetime(2008,1,1), \
+        ed=dt.datetime(2009,1,1), \
+        sv = 10000):
+
+        symbols = list(symbol)
+        # go to 1 year back for learning
+        sd = sd - dt.timedelta(365)
+
+
+        # get the data using util
+        adj_close = ut.get_data(symbols, pd.date_range(sd, ed))
+        adj_close.fillna(method='ffill', inplace=True)
+        adj_close.fillna(method='bfill', inplace=True)
+
+        # rolling mean
+        rol_mean_20 = pd.rolling_mean(adj_close[symbol], window=20)
+        rol_mean_150 = pd.rolling_mean(adj_close[symbol], window=150)
+        df = adj_close[symbols]
+        df['150-SMA'] = rol_mean_150
+        df['20-SMA'] = rol_mean_20
+
+        df_back_to_future = df[sd+dt.timedelta(365):]
+        df_back_to_future = df_back_to_future / df_back_to_future.IBM[0]
+
+
+        strategy = pd.DataFrame(index=df_back_to_future.index)
+        strategy['moving_average'] = df_back_to_future['20-SMA'] - df_back_to_future['150-SMA']
+
+
+        ## SLOW STOCHASTIC
+        high = pd.rolling_max(adj_close[symbol], window=14)
+        low = pd.rolling_min(adj_close[symbol], window=14)
+        K = (adj_close[symbol] - low) / (high-low) * 100
+        slow_stoch = pd.rolling_mean(K, window=3)
+
+        slow_future = slow_stoch[sd + dt.timedelta(365):]
+        strategy['slow_stoch'] = slow_future
+
+
+        ### MACD
+        e = 12
+        rol_mean_e = pd.rolling_mean(adj_close[symbol], window=e)
+        ema_12 = np.zeros(len(rol_mean_e.index))
+        multiplier = 2./(e+1)
+        ema_12[e-1] = rol_mean_e[e-1]
+        for i in range(e, len(adj_close.index)):
+            close = adj_close[symbol].values[i]
+            em = ema_12[i-1]
+            ema_12[i] = (close-em) * multiplier + em
+
+        e = 26
+        rol_mean_e = pd.rolling_mean(adj_close[symbol], window=e)
+        ema_26 = np.zeros(len(rol_mean_e.index))
+        multiplier = 2./(e+1)
+        ema_26[e-1] = rol_mean_e[e-1]
+        for i in range(e, len(adj_close.index)):
+            close = adj_close[symbol].values[i]
+            em = ema_26[i-1]
+            ema_26[i] = (close-em) * multiplier + em
+
+        df_macd = pd.DataFrame(rol_mean_e)
+        df_macd['ema_12'] = ema_12
+        df_macd['ema_26'] = ema_26
+        df_macd['MACD'] = df_macd['ema_12'] - df_macd['ema_26']
+        MACD = ema_12 - ema_26
+        MACD[:25] = 0
+
+        ## SIGNAL line
+        e = 9
+        rm_macd = pd.rolling_mean(MACD, window=e)
+        sig = np.zeros(len(MACD))
+        multiplier = 2./(e+1)
+        sig[e-1] = rm_macd[e-1]
+        for i in range(e, len(MACD)):
+            close = MACD[i]
+            em = sig[i-1]
+            sig[i] = (close - em) * multiplier + em
+
+        df_macd['signal'] = sig
+        df_macd['hist'] = df_macd['MACD'] - df_macd['signal']
+
+        strategy['MACD'] = df_macd[sd + dt.timedelta(365):]['hist']
+
+        return strategy
+
+
 
     # this method should create a QLearner, and train it for trading
     def addEvidence(self, symbol = "IBM", \
@@ -44,7 +137,15 @@ class StrategyLearner(object):
         ed=dt.datetime(2009,1,1), \
         sv = 10000):
 
+
+
         # add your code to do learning here
+
+
+        indicators = getIndicators(symbol, sd, ed, sv)
+
+
+
 
         # example usage of the old backward compatible util function
         syms=[symbol]
