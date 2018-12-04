@@ -33,23 +33,23 @@ class ms:
         adj_close.fillna(method='bfill', inplace=True)
 
 
-        rm_jpm = pd.rolling_mean(adj_close["JPM"], window=20)
-        rm_150_jpm = pd.rolling_mean(adj_close["JPM"], window=150)
-        JP = adj_close[['JPM']]
+        rm_jpm = pd.rolling_mean(adj_close["IBM"], window=20)
+        rm_150_jpm = pd.rolling_mean(adj_close["IBM"], window=150)
+        JP = adj_close[['IBM']]
         JP['150-SMA'] = rm_150_jpm
         JP['20-SMA'] = rm_jpm
 
         JP_2008 = JP[start_date +dt.timedelta(365):]
-        JP_2008 = JP_2008/JP_2008.JPM[0]
+        JP_2008 = JP_2008/JP_2008.IBM[0]
 
 
         strategy = pd.DataFrame(index=JP_2008.index)
         strategy['moving_average'] = JP_2008['20-SMA'] - JP_2008['150-SMA']
 
 
-        high = pd.rolling_max(adj_close["JPM"], window=14)
-        low = pd.rolling_min(adj_close["JPM"], window=14)
-        K = (adj_close["JPM"] - low)/ (high - low) * 100
+        high = pd.rolling_max(adj_close["IBM"], window=14)
+        low = pd.rolling_min(adj_close["IBM"], window=14)
+        K = (adj_close["IBM"] - low)/ (high - low) * 100
         slow_stoch = pd.rolling_mean(K, window=3)
 
         slow_2008 = slow_stoch[start_date +dt.timedelta(365):]
@@ -60,23 +60,23 @@ class ms:
 
         #### MACD
         e = 12
-        rm_jpm_1 = pd.rolling_mean(adj_close["JPM"], window=e)
+        rm_jpm_1 = pd.rolling_mean(adj_close["IBM"], window=e)
         ema_12 = np.zeros(len(rm_jpm_1.index))
         multiplier = 2./(e+1)
         ema_12[e-1] = rm_jpm_1[e-1]
         for i in range(e, len(adj_close.index)):
-            close = adj_close["JPM"].values[i]
+            close = adj_close["IBM"].values[i]
             em = ema_12[i-1]
             ema_12[i] = (close - em) * multiplier + em
 
 
         e = 26
-        rm_jpm_1 = pd.rolling_mean(adj_close["JPM"], window=e)
+        rm_jpm_1 = pd.rolling_mean(adj_close["IBM"], window=e)
         ema_26 = np.zeros(len(rm_jpm_1.index))
         multiplier = 2./(e+1)
         ema_26[e-1] = rm_jpm_1[e-1]
         for i in range(e, len(adj_close.index)):
-            close = adj_close["JPM"].values[i]
+            close = adj_close["IBM"].values[i]
             em = ema_26[i-1]
             ema_26[i] = (close - em) * multiplier + em
 
@@ -113,7 +113,7 @@ class ms:
 
         strategy.guess.loc[(strategy['moving_average'] < 0.1) & (strategy['slow_stoch'] > 30) & (strategy['MACD'] < 0.1)] = -1
 
-        jp = adj_close[['JPM']]
+        jp = adj_close[['IBM']]
         jp['Date'] = adj_close.index
         jp['Symbol'] = symbol[0]
         jp['Order'] = '-'
@@ -174,8 +174,8 @@ class ms:
     @staticmethod
     def trade(orders_df, sv, ed, sd):
         orders_df.sort_index(inplace=True)
-        if sv == 0:
-            print orders_df
+        # if sv == 0:
+        #     print orders_df
 
         # set dates and required stocks
         end_date = ed
@@ -189,19 +189,15 @@ class ms:
         adj_close = adj_close.fillna(method='bfill')
 
         # date formatting
+        # date formatting
         date_list = adj_close.index
-        date_list = lint "manual daily return", daily_opt.mean()[0]
-        # print 'manual daily std', daily)
-        ret_df = pd.Dint 'manual daily return', daily_opt.mean()[0]
-        # print 'manual daily std', dailymns=["Portfolio Value"], index=date_list)
-        emp = np.zeroint 'manual daily return', daily_opt.mean()[0]
-        # print 'manual daily std', dailyst))
+        date_list = list(date_list)
+        ret_df = pd.DataFrame(columns=["Portfolio Value"], index=date_list)
+        emp = np.zeros(len(date_list))
         adj_ind = 0
-        order_ind = 0int 'manual daily return', daily_opt.mean()[0]
-        # print 'manual daily std', daily
+        order_ind = 0
         order_len = len(orders_df.index)
-
-        my_port = Portfolio(cash=sv, comm=9.95, imp=0.005, stocks=["JPM"], lenn=len(adj_close.index))
+        my_port = Portfolio(cash=sv, comm=9.95, imp=0.005, stocks=["IBM"], lenn=len(adj_close.index))
 
         while adj_ind < len(date_list):
 
@@ -235,4 +231,4 @@ class ms:
         return daily_return[1:]
 
 
-# ms.test_policy(['JPM'], dt.datetime(2010,1,1), dt.datetime(2011,12,31), sv=100000)
+ms.test_policy(['IBM'], dt.datetime(2010,1,1), dt.datetime(2011,12,31), sv=100000)

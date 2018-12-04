@@ -2,9 +2,9 @@
 Copyright 2017, Georgia Tech Research Corporation
 Atlanta, Georgia 30332-0415
 All Rights Reserved
-"""		   		 		  
+"""
 import os
-import pandas as pd	    	 		 		   		 		  
+import pandas as pd
 
 def symbol_to_path(symbol, base_dir=None):
     """Return CSV file path given ticker symbol."""
@@ -22,6 +22,7 @@ def get_data(symbols, dates, addSPY=True, colname = 'Adj Close'):
         df_temp = pd.read_csv(symbol_to_path(symbol), index_col='Date',
                 parse_dates=True, usecols=['Date', colname], na_values=['nan'])
         df_temp = df_temp.rename(columns={colname: symbol})
+        print symbols
         df = df.join(df_temp)
         if symbol == 'SPY':  # drop dates SPY did not trade
             df = df.dropna(subset=["SPY"])
@@ -41,6 +42,6 @@ def get_orders_data_file(basefilename):
 
 def get_learner_data_file(basefilename):
     return open(os.path.join(os.environ.get("LEARNER_DATA_DIR",'Data/'),basefilename),'r')
-		   		 		  
-def get_robot_world_file(basefilename):  
+
+def get_robot_world_file(basefilename):
     return open(os.path.join(os.environ.get("ROBOT_WORLDS_DIR",'testworlds/'),basefilename))

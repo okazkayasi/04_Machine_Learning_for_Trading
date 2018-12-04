@@ -32,6 +32,14 @@ import util as ut
 import numpy as np
 import random
 import QLearner
+import warnings
+import sys
+from marketsimcode import *
+import matplotlib.pyplot as plt
+
+ #!/usr/bin/env python -W ignore::DeprecationWarning
+if not sys.warnoptions:
+    warnings.simplefilter("ignore")
 
 class StrategyLearner(object):
 
@@ -39,19 +47,18 @@ class StrategyLearner(object):
     def __init__(self, verbose = False, impact=0.0):
         self.verbose = verbose
         self.impact = impact
-        self.q_learner = QLearner.QLearner(num_states=1000, num_actions=3, alpha=0.2, gamma=0.95, rar=0.5, radr=0.99, dyna=0, verbose=False)
+        self.q_learner = QLearner.QLearner(num_states=1000, num_actions=3, alpha=0.01, \
+                                      gamma=0.95, rar=0.7, radr=0.999995, dyna=0, verbose=False)
 
 
-    @staticmethod
-    def getIndicators(symbol = "IBM", \
-        sd=dt.datetime(2008,1,1), \
-        ed=dt.datetime(2009,1,1), \
-        sv = 10000):
 
-        symbols = list(symbol)
+    def getIndicators(self, symbol = "IBM", sd=dt.datetime(2008,1,1), ed=dt.datetime(2009,1,1), sv = 10000):
+
+
         # go to 1 year back for learning
         sd = sd - dt.timedelta(365)
 
+        symbols = [symbol]
 
         # get the data using util
         adj_close = ut.get_data(symbols, pd.date_range(sd, ed))
@@ -65,8 +72,8 @@ class StrategyLearner(object):
         df['150-SMA'] = rol_mean_150
         df['20-SMA'] = rol_mean_20
 
-        df_back_to_future = df[sd+dt.timedelta(365):]
-        df_back_to_future = df_back_to_future / df_back_to_future.IBM[0]
+        df_back_to_future = df[sd + dt.timedelta(365) : ]
+        df_back_to_future = df_back_to_future / df_back_to_future[symbol][0]
 
 
         strategy = pd.DataFrame(index=df_back_to_future.index)
@@ -78,10 +85,9 @@ class StrategyLearner(object):
         low = pd.rolling_min(adj_close[symbol], window=14)
         K = (adj_close[symbol] - low) / (high-low) * 100
         slow_stoch = pd.rolling_mean(K, window=3)
-
-        slow_future = slow_stoch[sd + dt.timedelta(365):]
+        # print slow_stoch
+        slow_future = slow_stoch[sd+dt.timedelta(365):]
         strategy['slow_stoch'] = slow_future
-
 
         ### MACD
         e = 12
@@ -126,40 +132,136 @@ class StrategyLearner(object):
         df_macd['hist'] = df_macd['MACD'] - df_macd['signal']
 
         strategy['MACD'] = df_macd[sd + dt.timedelta(365):]['hist']
-
         return strategy
 
 
 
+    # def compute_n_day_daily_returns(self, df, n, threshold):
+    #     # return DataFrame that have the same number of rows
+    #     ibm = df.copy()
+    #     ibm[:-n] = np.divide(1, ibm[:-n] / ibm[n:].values)
+    #     threshold = self.impact
+    #     if threshold < 0.0001:
+    #         threshold = 0.001
+    #
+    #     ibm[-n:] = 1
+    #     q = ibm.copy()
+    #     q[ibm > 1 + threshold] = 1
+    #     q[ibm <= 1 + threshold] = 0
+    #     q[ibm < 1 - threshold] = -1
+    # #     ibm[ibm.values>]
+    #     return q.values
+
+
+
+
+    def compute_n_day_daily_returns(self, df, n, threshold):
+
+        # return DataFrame that have the same number of rows
+        ibm = df.copy()
+        ibm[1:] = (df[1:] / df[:-1].values)
+        q = ibm.copy()
+        q[ibm > 1 + threshold] = 1
+        q[ibm <= 1 + threshold] = 0
+        q[ibm < 1 - threshold] = -1
+    #     ibm[ibm.values>]
+        return q.values
+
     # this method should create a QLearner, and train it for trading
-    def addEvidence(self, symbol = "IBM", \
-        sd=dt.datetime(2008,1,1), \
-        ed=dt.datetime(2009,1,1), \
-        sv = 10000):
-
-
+    def addEvidence(self, symbol = "IBM", sd=dt.datetime(2008,1,1), ed=dt.datetime(2009,12,31), sv = 100000):
 
         # add your code to do learning here
+        indicators = self.getIndicators(symbol, sd, ed, sv=100000)
 
 
-        indicators = getIndicators(symbol, sd, ed, sv)
+        # get discrete states number
+        a = (indicators[indicators.columns[0]].values)
+        b = (indicators[indicators.columns[1]].values)
+        c = (indicators[indicators.columns[2]].values)
+
+        mov_av = pd.qcut(a, 10, labels=False)
+        slow_st = pd.qcut(b, 10, labels=False, duplicates='drop')
+        macd = pd.qcut(c, 10, labels=False)
+        disc = mov_av*100+slow_st*10+macd
+
+        # where we get the reward
+        n = 3
+        adj_close = ut.get_data([symbol], pd.date_range(sd, ed))
+        adj_close = adj_close[adj_close.columns[1]]
+        rewards = self.compute_n_day_daily_returns(adj_close, n, self.impact)
 
 
+        ## use QLearner
+
+        qqq = 0
+        actions = np.zeros(len(rewards))
+
+        a = self.q_learner.querysetstate(disc[0])
+        actions[0] = a
+        while qqq < 3000000:
+            i = 0
+
+            while i < len(rewards)-1:
+                i += 1
+                qqq += 1
+                if a == 0:
+                    r = rewards[i]
+                elif a == 1:
+                    r = 0
+                elif a == 2:
+                    r = -rewards[i]
+
+                a = self.q_learner.query(disc[i], r)
+                actions[i] = a
+
+        df = pd.DataFrame(adj_close)
+        df['Date'] = df.index
+        df['Symbol'] = symbol
+        df['Orders'] = actions
+        df['Order1'] = (df['Orders'] - df.Orders.shift(1))
+
+        df.Order1[0] = df.Orders[0] - 1
+
+        df['Order'] = '-'
+        df.Order[df['Order1'] > 0] = 'SELL'
+        df.Order[df['Order1'] < 0] = 'BUY'
+        df['Shares'] = '-'
+        df.Shares = abs(df['Order1'] * 1000)
 
 
-        # example usage of the old backward compatible util function
-        syms=[symbol]
-        dates = pd.date_range(sd, ed)
-        prices_all = ut.get_data(syms, dates)  # automatically adds SPY
-        prices = prices_all[syms]  # only portfolio symbols
-        prices_SPY = prices_all['SPY']  # only SPY, for comparison later
-        if self.verbose: print prices
+        df = df.loc[df['Order'] != '-']
+        order_book = df[["Date", "Symbol", "Order", "Shares"]]
 
-        # example use with new colname
-        volume_all = ut.get_data(syms, dates, colname = "Volume")  # automatically adds SPY
-        volume = volume_all[syms]  # only portfolio symbols
-        volume_SPY = volume_all['SPY']  # only SPY, for comparison later
-        if self.verbose: print volume
+
+        port_vals = compute_portvals(order_book, start_val=100000, commission=0, impact=self.impact)
+
+        # port_vals.plot()
+        # print port_vals.values[-1]/port_vals.values[0]
+
+        fig, ax = plt.subplots(figsize=(10,8))
+        ax.set_title(symbol)
+        ax.set_ylabel('Total Worth')
+        ax.set_xlabel('Date')
+        ax.plot(port_vals.index, port_vals.values, label='QLearning')
+        if symbol in ["ML4T-220", "SINE_FAST_NOISE"]:
+            ax.plot(port_vals.index, np.ones(len(port_vals.values))*2*port_vals.values[0], label='Benchmark')
+        else:
+            o_book = order_book[:2]
+            o_book.index = [dt.datetime(2008,2,1), dt.datetime(2009,12,31)]
+            o_book.Date = [dt.datetime(2008,2,1), dt.datetime(2009,12,31)]
+            o_book.Order = ["BUY", "SELL"]
+            o_book.Shares = [1000., 1000.]
+            port_vals1 = compute_portvals(o_book, start_val=100000, commission=0, impact=self.impact)
+            ax.plot(port_vals1.index, port_vals1.values, label='Benchmark')
+        ax.legend()
+        for i in range(len(order_book)):
+            if order_book.Order[i] == "BUY":
+                plt.axvline(order_book.Date[i], color='green', linewidth = 0.3)
+            else:
+                plt.axvline(order_book.Date[i], color='red',  linewidth = 0.3)
+        plt.savefig(symbol + '.png', dpi=100)
+        plt.gcf()
+
 
     # this method should use the existing policy and test it against new data
     def testPolicy(self, symbol = "IBM", \
@@ -167,23 +269,64 @@ class StrategyLearner(object):
         ed=dt.datetime(2010,1,1), \
         sv = 10000):
 
-        # here we build a fake set of trades
-        # your code should return the same sort of data
-        dates = pd.date_range(sd, ed)
-        prices_all = ut.get_data([symbol], dates)  # automatically adds SPY
-        trades = prices_all[[symbol,]]  # only portfolio symbols
-        trades_SPY = prices_all['SPY']  # only SPY, for comparison later
-        trades.values[:,:] = 0 # set them all to nothing
-        trades.values[0,:] = 1000 # add a BUY at the start
-        trades.values[40,:] = -1000 # add a SELL
-        trades.values[41,:] = 1000 # add a BUY
-        trades.values[60,:] = -2000 # go short from long
-        trades.values[61,:] = 2000 # go long from short
-        trades.values[-1,:] = -1000 #exit on the last day
-        if self.verbose: print type(trades) # it better be a DataFrame!
-        if self.verbose: print trades
-        if self.verbose: print prices_all
-        return trades
+
+        indicators = self.getIndicators(symbol, sd, ed, sv)
+        a = (indicators[indicators.columns[0]].values)
+        b = (indicators[indicators.columns[1]].values)
+        c = (indicators[indicators.columns[2]].values)
+        mov_av = pd.qcut(a, 10, labels=False)
+        slow_st = pd.qcut(b, 10, labels=False, duplicates='drop')
+        macd = pd.qcut(c, 10, labels=False)
+        disc = mov_av*100+slow_st*10+macd
+
+        n = 5
+        adj_close = ut.get_data([symbol], pd.date_range(sd, ed))
+        adj_close = adj_close[adj_close.columns[1]]
+        rewards = self.compute_n_day_daily_returns(adj_close, n, 0.0)
+
+        actions = np.zeros(len(rewards))
+        rewards_1 = np.zeros(len(rewards))
+        x = disc[0]
+        a = self.q_learner.querysetstate(x)
+        i = 0
+        actions[0] = a
+        while i < len(rewards)-1:
+            i += 1
+            if a == 0:
+                r = rewards[i]
+            elif a == 1:
+                r = 0
+            elif a == 2:
+                r = -rewards[i]
+
+            a = self.q_learner.querysetstate(disc[i])
+
+            actions[i] = a
+
+        df = pd.DataFrame(adj_close)
+        df['Date'] = df.index
+        df['Symbol'] = symbol
+        df['Orders'] = actions
+        df['Order1'] = (df['Orders'] - df.Orders.shift(1))
+
+        df.Order1[0] = df.Orders[0] - 1
+
+        df['Order'] = '-'
+        df.Order[df['Order1'] > 0] = 'SELL'
+        df.Order[df['Order1'] < 0] = 'BUY'
+        df['Shares'] = '-'
+        df.Shares = abs(df['Order1'] * 1000)
+
+
+        df = df.loc[df['Order'] != '-']
+        order_book = df[["Date", "Symbol", "Order", "Shares"]]
+
+        port_vals = compute_portvals(order_book, start_val=100000, commission=0, impact=0)
+        # print port_vals.values[-1]/port_vals.values[0]
+        order_book.Shares[order_book['Order']=="SELL"] *= -1
+
+
+        return pd.DataFrame(order_book.Shares)
 
 if __name__=="__main__":
     print "One does not simply think up a strategy"
